@@ -1,0 +1,24 @@
+{
+  "name": "goit-nodejs-hw",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js",
+    "dev": "nodemon index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ValeriiaChorna/goit-nodejs-hw.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ValeriiaChorna/goit-nodejs-hw/issues"
+  },
+  "homepage": "https://github.com/ValeriiaChorna/goit-nodejs-hw#readme",
+  "devDependencies": {
+    "nodemon": "^2.0.3"
+  }
+}
