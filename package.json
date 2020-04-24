@@ -20,5 +20,8 @@
   "homepage": "https://github.com/ValeriiaChorna/goit-nodejs-hw#readme",
   "devDependencies": {
     "nodemon": "^2.0.3"
+  },
+  "dependencies": {
+    "yargs": "^15.3.1"
   }
 }
