@@ -1,7 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 
-const contactsPath = path.join(__dirname, "./db/contacts.json");
+const contactsPath = path.join(__dirname, "../../db/contacts.json");
 
 function listContacts() {
   try {
@@ -36,12 +36,11 @@ function removeContact(contactId) {
   }
 }
 
-function addContact(name, email, phone) {
+function addContact(id, name, email, phone) {
   try {
     const contactList = listContacts();
-    const newId = contactList.length + 1;
     const newContact = {
-      id: newId,
+      id,
       name,
       email,
       phone,
@@ -58,9 +57,28 @@ function addContact(name, email, phone) {
   }
 }
 
+function updateContact(id, updates) {
+  try {
+    const contactList = listContacts();
+    const indexContact = contactList.findIndex((el) => el.id === id);
+    const updatedContact = { ...contactList[indexContact], ...updates };
+    contactList[indexContact] = updatedContact;
+    return fs.writeFileSync(
+      contactsPath,
+      JSON.stringify(contactList),
+      (err) => {
+        if (err) throw err;
+      }
+    );
+  } catch (err) {
+    console.log("error:", err);
+  }
+}
+
 module.exports = {
   listContacts,
   getContactById,
   removeContact,
   addContact,
+  updateContact,
 };
