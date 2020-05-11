@@ -1,10 +1,8 @@
 import express from "express";
-import { contactsRouter } from "./contacts/routes/contacts.router";
+import { contactsRouter } from "./contacts/contacts.router";
 import morgan from "morgan";
-// import cors from "cors";
+import cors from "cors";
 import path from "path";
-import mongoose from "mongoose";
-
 const PORT = 3000;
 
 export class CrudServer {
@@ -12,12 +10,11 @@ export class CrudServer {
     this.server = null;
   }
 
-  async start() {
+  start() {
     this.initServer();
     this.initMiddleware();
     this.initRoutes();
     this.handleErrors();
-    await this.initDatabase();
     this.startListening();
   }
 
@@ -29,7 +26,7 @@ export class CrudServer {
     this.server.use(express.json());
     this.server.use("/static", express.static(path.join(__dirname, "static")));
     this.server.use(morgan("tiny"));
-    // this.server.use(cors());
+    this.server.use(cors());
   }
 
   initRoutes() {
@@ -41,19 +38,6 @@ export class CrudServer {
       delete err.stack;
       return res.status(err.status).send(`${err.name}: ${err.message}`);
     });
-  }
-
-  async initDatabase() {
-    try {
-      await mongoose.connect(process.env.MONGODB_DB_URI, {
-        useNewUrlParser: true,
-        useUnifiedTopology: true,
-      });
-      console.log("Database connection successful");
-    } catch (err) {
-      console.log("MongoDB connection error", err);
-      process.exit(1);
-    }
   }
 
   startListening() {

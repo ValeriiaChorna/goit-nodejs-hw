@@ -1,10 +1,10 @@
-import contactsFunc from "./contacts.functions";
+import contactsFunc from "./contacts.functions_hw1";
 import {
   NotFound,
   ValidationError,
   DeletedContactSuccess,
-} from "../helpers/errorConstructors";
-import { createControllerProxy } from "../helpers/controllerProxy";
+} from "../../helpers/errorConstructors";
+import { createControllerProxy } from "../../helpers/controllerProxy";
 import { v4 } from "uuid";
 import Joi from "joi";
 
