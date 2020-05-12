@@ -17,6 +17,7 @@ export class CrudServer {
     this.initMiddleware();
     this.initRoutes();
     this.handleErrors();
+    this.handleErrors2();
     await this.initDatabase();
     this.startListening();
   }
@@ -43,11 +44,27 @@ export class CrudServer {
     });
   }
 
+  handleErrors2() {
+    //добавила из-за ошибки RangeError [ERR_HTTP_INVALID_STATUS_CODE]: Invalid status code: undefined
+    this.server.use((err, req, res, next) => {
+      if (err && err.status !== 500) {
+        res
+          .status(err.status || 400)
+          .send(
+            "RangeError [ERR_HTTP_INVALID_STATUS_CODE]: Invalid status code: undefined"
+          );
+      } else {
+        res.status(500).json({ message: "Internal server occured..." });
+      }
+    });
+  }
+
   async initDatabase() {
     try {
       await mongoose.connect(process.env.MONGODB_DB_URI, {
         useNewUrlParser: true,
         useUnifiedTopology: true,
+        useFindAndModify: false,
       });
       console.log("Database connection successful");
     } catch (err) {

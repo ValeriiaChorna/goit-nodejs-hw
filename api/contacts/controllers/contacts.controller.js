@@ -31,6 +31,7 @@ class ContactsController {
       next(err);
     }
   }
+
   validateCreateContact(req, res, next) {
     const contactRules = Joi.object({
       name: Joi.string().required(),
