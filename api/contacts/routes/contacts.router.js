@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { contactsController } from "./contacts.controller";
+import { contactsController } from "../controllers/contacts.controller";
 
 const router = Router();
 
@@ -11,7 +11,7 @@ router.post(
   contactsController.createContact
 );
 router.delete("/:contactId", contactsController.deleteContact);
-router.patch(
+router.put(
   "/:contactId",
   contactsController.validateUpdateContact,
   contactsController.updateContact

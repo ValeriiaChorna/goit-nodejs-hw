@@ -1,48 +1,43 @@
-import contactsFunc from "./contacts.functions";
+import { contactModel } from "../models/contacts.model";
 import {
   NotFound,
   ValidationError,
   DeletedContactSuccess,
-} from "../helpers/errorConstructors";
-import { createControllerProxy } from "../helpers/controllerProxy";
-import { v4 } from "uuid";
+} from "../../helpers/errorConstructors";
+import { createControllerProxy } from "../../helpers/controllerProxy";
 import Joi from "joi";
 
 class ContactsController {
-  getListContacts(req, res, next) {
-    res.statusCode = 200;
-    res.send(JSON.stringify(contactsFunc.listContacts()));
+  async getListContacts(req, res, next) {
+    const contacts = await contactModel.getAllContacts();
+    res.status(200).json(contacts);
   }
 
-  getContactById(req, res, next) {
+  async getContactById(req, res, next) {
     try {
       const { contactId } = req.params;
-      const foundedContact = contactsFunc.getContactById(contactId);
-      if (!foundedContact) {
-        throw new NotFound("Not found");
-      }
+      const foundedContact = await this.getContactByIdOrThrow(contactId);
       return res.status(200).json(foundedContact);
     } catch (err) {
       next(err);
     }
   }
 
-  createContact(req, res, next) {
+  async createContact(req, res, next) {
     try {
-      const newContactId = v4();
-      const { name, email, phone } = req.body;
-      contactsFunc.addContact(newContactId, name, email, phone);
-      const newContact = contactsFunc.getContactById(newContactId);
+      const newContact = await contactModel.createContact(req.body);
       return res.status(201).json(newContact);
     } catch (err) {
       next(err);
     }
   }
+
   validateCreateContact(req, res, next) {
     const contactRules = Joi.object({
       name: Joi.string().required(),
       email: Joi.string().required(),
       phone: Joi.string().required(),
+      password: Joi.string().required(),
     });
     const validationResult = Joi.validate(req.body, contactRules);
     if (validationResult.error) {
@@ -51,34 +46,31 @@ class ContactsController {
     next();
   }
 
-  deleteContact(req, res, next) {
+  async deleteContact(req, res, next) {
     try {
       const contactId = req.params.contactId;
-      const foundedContact = contactsFunc.getContactById(contactId);
-      if (!foundedContact) {
-        throw new NotFound("Not found");
-      }
-      contactsFunc.removeContact(contactId);
+      await this.getContactByIdOrThrow(contactId);
+      await contactModel.deleteContact(contactId);
       throw new DeletedContactSuccess("contact deleted");
     } catch (err) {
       next(err);
     }
   }
 
-  updateContact(req, res, next) {
+  async updateContact(req, res, next) {
     try {
       const { contactId } = req.params;
-      const foundedContact = contactsFunc.getContactById(contactId);
-      if (!foundedContact) {
-        throw new NotFound("Not found");
-      }
-      contactsFunc.updateContact(contactId, req.body);
-      const updatedContact = contactsFunc.getContactById(contactId);
-      return res.status(200).json(updatedContact);
+      await this.getContactByIdOrThrow(contactId);
+      const updatedContact = await contactModel.updateContact(
+        contactId,
+        req.body
+      );
+      return res.status(200).json(updatedContact.value);
     } catch (err) {
       next(err);
     }
   }
+
   validateUpdateContact(req, res, next) {
     const contactRules = Joi.object({
       name: Joi.string(),
@@ -94,6 +86,14 @@ class ContactsController {
       throw new ValidationError("missing required name field");
     }
     next();
+  }
+
+  async getContactByIdOrThrow(contactId) {
+    const foundedContact = await contactModel.getContactById(contactId);
+    if (!foundedContact) {
+      throw new NotFound("Not found");
+    }
+    return foundedContact;
   }
 }
 
