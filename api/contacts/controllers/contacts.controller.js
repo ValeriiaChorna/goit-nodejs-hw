@@ -25,7 +25,7 @@ class ContactsController {
 
   async createContact(req, res, next) {
     try {
-      const newContact = await contactModel.createContact(req.body);
+      const newContact = await contactModel.createNewContact(req.body);
       return res.status(201).json(newContact);
     } catch (err) {
       next(err);
@@ -50,7 +50,7 @@ class ContactsController {
     try {
       const contactId = req.params.contactId;
       await this.getContactByIdOrThrow(contactId);
-      await contactModel.deleteContact(contactId);
+      await contactModel.removeContact(contactId);
       throw new DeletedContactSuccess("contact deleted");
     } catch (err) {
       next(err);
@@ -61,7 +61,7 @@ class ContactsController {
     try {
       const { contactId } = req.params;
       await this.getContactByIdOrThrow(contactId);
-      const updatedContact = await contactModel.updateContact(
+      const updatedContact = await contactModel.updateExistedContact(
         contactId,
         req.body
       );

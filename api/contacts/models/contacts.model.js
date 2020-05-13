@@ -12,9 +12,9 @@ const contactSchema = new Schema({
 
 contactSchema.statics.getAllContacts = getAllContacts;
 contactSchema.statics.getContactById = getContactById;
-contactSchema.statics.createContact = createContact;
-contactSchema.statics.deleteContact = deleteContact;
-contactSchema.statics.updateContact = updateContact;
+contactSchema.statics.createNewContact = createNewContact;
+contactSchema.statics.removeContact = removeContact;
+contactSchema.statics.updateExistedContact = updateExistedContact;
 
 async function getAllContacts() {
   return this.find();
@@ -28,11 +28,11 @@ async function getContactById(contactId) {
   return this.findById(contactId);
 }
 
-async function createContact(newContactParams) {
+async function createNewContact(newContactParams) {
   return this.create(newContactParams);
 }
 
-async function deleteContact(contactId) {
+async function removeContact(contactId) {
   if (!ObjectId.isValid(contactId)) {
     return null;
   }
@@ -40,7 +40,7 @@ async function deleteContact(contactId) {
   return this.findByIdAndDelete(contactId);
 }
 
-async function updateContact(contactId, newContactParams) {
+async function updateExistedContact(contactId, newContactParams) {
   if (!ObjectId.isValid(contactId)) {
     return null;
   }
