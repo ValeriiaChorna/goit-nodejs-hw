@@ -6,15 +6,27 @@ export class BaseError extends Error {
   }
 }
 
+export class ValidationError extends BaseError {
+  constructor(message) {
+    super("message", message, 400);
+  }
+}
+
+export class UnauthorizedError extends BaseError {
+  constructor(message) {
+    super("message", message, 401);
+  }
+}
+
 export class NotFound extends BaseError {
   constructor(message) {
     super("message", message, 404);
   }
 }
 
-export class ValidationError extends BaseError {
+export class ConflictError extends BaseError {
   constructor(message) {
-    super("message", message, 400);
+    super("message", message, 409);
   }
 }
 

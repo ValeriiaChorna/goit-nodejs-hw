@@ -1,10 +1,10 @@
-import { contactModel } from "../models/contacts.model";
+import { contactModel } from "./contacts.model";
 import {
   NotFound,
   ValidationError,
   DeletedContactSuccess,
-} from "../../helpers/errorConstructors";
-import { createControllerProxy } from "../../helpers/controllerProxy";
+} from "../helpers/errorConstructors";
+import { createControllerProxy } from "../helpers/controllerProxy";
 import Joi from "joi";
 
 class ContactsController {

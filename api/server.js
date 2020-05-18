@@ -1,5 +1,6 @@
 import express from "express";
-import { contactsRouter } from "./contacts/routes/contacts.router";
+import { contactsRouter } from "./contacts/contacts.router";
+import { authRouter } from "./auth/auth.router";
 import morgan from "morgan";
 // import cors from "cors";
 import path from "path";
@@ -15,9 +16,9 @@ export class CrudServer {
   async start() {
     this.initServer();
     this.initMiddleware();
+    await this.initDatabase();
     this.initRoutes();
     this.handleErrors();
-    await this.initDatabase();
     this.startListening();
   }
 
@@ -34,6 +35,7 @@ export class CrudServer {
 
   initRoutes() {
     this.server.use("/api/contacts", contactsRouter);
+    this.server.use("/auth", authRouter);
   }
 
   handleErrors() {

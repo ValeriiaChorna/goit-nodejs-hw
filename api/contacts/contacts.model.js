@@ -5,13 +5,20 @@ const contactSchema = new Schema({
   name: { type: String, require: true, maxlength: 255, minlength: 3 },
   email: { type: String, require: true, unique: true },
   phone: { type: String, require: true, max: 20, min: 7 },
-  password: { type: String, require: true },
-  subscription: { type: String, require: true, default: "free" },
+  passwordHash: { type: String, require: true },
+  subscription: {
+    type: String,
+    require: true,
+    enum: ["free", "pro", "premium"],
+    default: "free",
+  },
   token: { type: String, require: true, default: "" },
 });
 
 contactSchema.statics.getAllContacts = getAllContacts;
 contactSchema.statics.getContactById = getContactById;
+contactSchema.statics.getContactByEmail = getContactByEmail;
+contactSchema.statics.getContactByToken = getContactByToken;
 contactSchema.statics.createNewContact = createNewContact;
 contactSchema.statics.removeContact = removeContact;
 contactSchema.statics.updateExistedContact = updateExistedContact;
@@ -50,6 +57,14 @@ async function updateExistedContact(contactId, newContactParams) {
     { $set: newContactParams },
     { new: true }
   );
+}
+
+async function getContactByEmail(email) {
+  return this.findOne({ email });
+}
+
+async function getContactByToken(token) {
+  return this.findOne({ token });
 }
 
 export const contactModel = mongoose.model("Contact", contactSchema);
