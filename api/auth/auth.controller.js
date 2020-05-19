@@ -18,7 +18,7 @@ class AuthController {
       });
       return res
         .status(201)
-        .json({ user: this.composeContactForResReg(newContact) });
+        .json({ contact: this.composeContactForResReg(newContact) });
     } catch (err) {
       next(err);
     }
@@ -46,7 +46,40 @@ class AuthController {
       await contactModel.updateExistedContact(existedContact._id, { token });
       return res
         .status(200)
-        .json({ token, user: this.composeContactForResReg(existedContact) });
+        .json({ token, contact: this.composeContactForResReg(existedContact) });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  async authorize(req, res, next) {
+    try {
+      const authHeader = req.headers.authorization || "";
+      const token = authHeader.replace("Bearer ", "");
+      try {
+        authActions.varifyToken(token);
+      } catch (err) {
+        throw new UnauthorizedError("Not authorized1");
+      }
+
+      const contact = await contactModel.getContactByToken(token);
+      if (!contact) {
+        throw new UnauthorizedError("Not authorized2");
+      }
+
+      req.contact = contact;
+      req.token = token;
+
+      next();
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  async logOutContact(req, res, next) {
+    try {
+      await contactModel.updateExistedContact(req.contact._id, { token: "" });
+      return res.status(204).json();
     } catch (err) {
       next(err);
     }

@@ -34,7 +34,7 @@ export class CrudServer {
   }
 
   initRoutes() {
-    this.server.use("/api/contacts", contactsRouter);
+    this.server.use("/contacts", contactsRouter);
     this.server.use("/auth", authRouter);
   }
 

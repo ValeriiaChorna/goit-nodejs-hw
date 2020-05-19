@@ -6,18 +6,52 @@ import {
 } from "../helpers/errorConstructors";
 import { createControllerProxy } from "../helpers/controllerProxy";
 import Joi from "joi";
+import { authActions } from "../auth/auth.actions";
 
 class ContactsController {
   async getListContacts(req, res, next) {
-    const contacts = await contactModel.getAllContacts();
-    res.status(200).json(contacts);
+    try {
+      const { page, limit, sort, sub } = req.query;
+      if (!sub) {
+        const contacts = await this.getContactsWithPagination(
+          page,
+          limit,
+          sort
+        );
+        return res.status(200).json(contacts.docs);
+      }
+      const filteredContactsList = await this.filterContactBySub(sub);
+      return res.status(200).json(filteredContactsList.docs);
+    } catch (err) {
+      next(err);
+    }
+  }
+  async getContactsWithPagination(page, limit, sort) {
+    const options = limit && { page, limit, sort };
+    return contactModel.paginate({}, options);
+  }
+
+  async filterContactBySub(sub) {
+    return contactModel.paginate({ subscription: sub });
   }
 
   async getContactById(req, res, next) {
     try {
       const { contactId } = req.params;
       const foundedContact = await this.getContactByIdOrThrow(contactId);
-      return res.status(200).json(foundedContact);
+      const { email, subscription } = foundedContact;
+      return res.status(200).json({ email, subscription });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  async getCurrentContact(req, res, next) {
+    try {
+      const { _id: contactId } = req.contact;
+      const foundedContact = await this.getContactByIdOrThrow(contactId);
+      const { email, subscription } = foundedContact;
+      return res.status(200).json({ email, subscription });
     } catch (err) {
       next(err);
     }
@@ -25,7 +59,11 @@ class ContactsController {
 
   async createContact(req, res, next) {
     try {
-      const newContact = await contactModel.createNewContact(req.body);
+      const passwordHash = await authActions.hashPassword(req.body.password);
+      const newContact = await contactModel.createNewContact({
+        ...req.body,
+        passwordHash,
+      });
       return res.status(201).json(newContact);
     } catch (err) {
       next(err);
@@ -65,7 +103,8 @@ class ContactsController {
         contactId,
         req.body
       );
-      return res.status(200).json(updatedContact.value);
+      const { name, email, subscription } = updatedContact;
+      return res.status(200).json({ name, email, subscription });
     } catch (err) {
       next(err);
     }
@@ -76,6 +115,7 @@ class ContactsController {
       name: Joi.string(),
       email: Joi.string(),
       phone: Joi.string(),
+      subscription: Joi.string().valid(["free", "pro", "premium"]),
     });
     const { name, email, phone } = req.body;
     if (!(name || email || phone)) {
@@ -91,7 +131,7 @@ class ContactsController {
   async getContactByIdOrThrow(contactId) {
     const foundedContact = await contactModel.getContactById(contactId);
     if (!foundedContact) {
-      throw new NotFound("Not found");
+      throw new NotFound("Contact not found");
     }
     return foundedContact;
   }

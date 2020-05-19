@@ -15,4 +15,6 @@ router.post(
   authController.logInContact
 );
 
+router.post("/logout", authController.authorize, authController.logOutContact);
+
 export const authRouter = router;

@@ -1,4 +1,5 @@
 import mongoose, { Schema } from "mongoose";
+const mongoosePaginate = require("mongoose-paginate-v2");
 const { ObjectId } = mongoose.Types;
 
 const contactSchema = new Schema({
@@ -22,6 +23,7 @@ contactSchema.statics.getContactByToken = getContactByToken;
 contactSchema.statics.createNewContact = createNewContact;
 contactSchema.statics.removeContact = removeContact;
 contactSchema.statics.updateExistedContact = updateExistedContact;
+contactSchema.plugin(mongoosePaginate);
 
 async function getAllContacts() {
   return this.find();

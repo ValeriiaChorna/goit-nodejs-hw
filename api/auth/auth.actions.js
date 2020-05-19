@@ -17,6 +17,10 @@ class AuthActions {
   createToken(contactId) {
     return jwt.sign({ contactId }, process.env.JWT_SECRET);
   }
+
+  varifyToken(token) {
+    return jwt.verify(token, process.env.JWT_SECRET);
+  }
 }
 
 export const authActions = new AuthActions();
