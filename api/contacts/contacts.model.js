@@ -1,20 +1,29 @@
 import mongoose, { Schema } from "mongoose";
+const mongoosePaginate = require("mongoose-paginate-v2");
 const { ObjectId } = mongoose.Types;
 
 const contactSchema = new Schema({
   name: { type: String, require: true, maxlength: 255, minlength: 3 },
   email: { type: String, require: true, unique: true },
   phone: { type: String, require: true, max: 20, min: 7 },
-  password: { type: String, require: true },
-  subscription: { type: String, require: true, default: "free" },
+  passwordHash: { type: String, require: true },
+  subscription: {
+    type: String,
+    require: true,
+    enum: ["free", "pro", "premium"],
+    default: "free",
+  },
   token: { type: String, require: true, default: "" },
 });
 
 contactSchema.statics.getAllContacts = getAllContacts;
 contactSchema.statics.getContactById = getContactById;
-contactSchema.statics.createContact = createContact;
-contactSchema.statics.deleteContact = deleteContact;
-contactSchema.statics.updateContact = updateContact;
+contactSchema.statics.getContactByEmail = getContactByEmail;
+contactSchema.statics.getContactByToken = getContactByToken;
+contactSchema.statics.createNewContact = createNewContact;
+contactSchema.statics.removeContact = removeContact;
+contactSchema.statics.updateExistedContact = updateExistedContact;
+contactSchema.plugin(mongoosePaginate);
 
 async function getAllContacts() {
   return this.find();
@@ -28,11 +37,11 @@ async function getContactById(contactId) {
   return this.findById(contactId);
 }
 
-async function createContact(newContactParams) {
+async function createNewContact(newContactParams) {
   return this.create(newContactParams);
 }
 
-async function deleteContact(contactId) {
+async function removeContact(contactId) {
   if (!ObjectId.isValid(contactId)) {
     return null;
   }
@@ -40,7 +49,7 @@ async function deleteContact(contactId) {
   return this.findByIdAndDelete(contactId);
 }
 
-async function updateContact(contactId, newContactParams) {
+async function updateExistedContact(contactId, newContactParams) {
   if (!ObjectId.isValid(contactId)) {
     return null;
   }
@@ -50,6 +59,14 @@ async function updateContact(contactId, newContactParams) {
     { $set: newContactParams },
     { new: true }
   );
+}
+
+async function getContactByEmail(email) {
+  return this.findOne({ email });
+}
+
+async function getContactByToken(token) {
+  return this.findOne({ token });
 }
 
 export const contactModel = mongoose.model("Contact", contactSchema);
