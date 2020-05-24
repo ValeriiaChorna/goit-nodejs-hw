@@ -5,8 +5,7 @@ import morgan from "morgan";
 // import cors from "cors";
 import path from "path";
 import mongoose from "mongoose";
-
-const PORT = 3000;
+// import cookieParser from "cookie-parser";
 
 export class CrudServer {
   constructor() {
@@ -28,12 +27,13 @@ export class CrudServer {
 
   initMiddleware() {
     this.server.use(express.json());
-    this.server.use("/static", express.static(path.join(__dirname, "static")));
     this.server.use(morgan("tiny"));
     // this.server.use(cors());
+    // this.server.use(cookieParser());
   }
 
   initRoutes() {
+    this.server.use(express.static(path.join(__dirname, "../static")));
     this.server.use("/contacts", contactsRouter);
     this.server.use("/auth", authRouter);
   }
@@ -50,7 +50,7 @@ export class CrudServer {
       await mongoose.connect(process.env.MONGODB_DB_URI, {
         useNewUrlParser: true,
         useUnifiedTopology: true,
-        // useFindAndModify: false,
+        useFindAndModify: false,
       });
       console.log("Database connection successful");
     } catch (err) {
@@ -60,8 +60,8 @@ export class CrudServer {
   }
 
   startListening() {
-    this.server.listen(PORT, () => {
-      console.log("Server started listening on port", PORT);
+    this.server.listen(process.env.PORT, () => {
+      console.log("Server started listening on port", process.env.PORT);
     });
   }
 }

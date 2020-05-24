@@ -1,17 +1,17 @@
 import { Router } from "express";
 import { authController } from "./auth.controller";
-import { validations } from "./auth.validation";
+import { authValidations } from "./auth.validation";
 
 const router = Router();
 
 router.post(
   "/register",
-  validations.validateRegisterContact,
+  authValidations.validateRegisterContact,
   authController.registerContact
 );
 router.post(
   "/login",
-  validations.validateLogInContact,
+  authValidations.validateLogInContact,
   authController.logInContact
 );
 
