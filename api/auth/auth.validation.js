@@ -1,7 +1,7 @@
 import Joi from "joi";
 import { ValidationError } from "../helpers/errorConstructors";
 
-class Validations {
+class AuthValidations {
   validateRegisterContact(req, res, next) {
     const contactRules = Joi.object({
       name: Joi.string(),
@@ -33,4 +33,4 @@ class Validations {
   }
 }
 
-export const validations = new Validations();
+export const authValidations = new AuthValidations();

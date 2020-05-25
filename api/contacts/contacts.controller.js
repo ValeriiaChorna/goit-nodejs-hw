@@ -1,12 +1,9 @@
 import { contactModel } from "./contacts.model";
-import {
-  NotFound,
-  ValidationError,
-  DeletedContactSuccess,
-} from "../helpers/errorConstructors";
+import { NotFound, DeletedContactSuccess } from "../helpers/errorConstructors";
 import { createControllerProxy } from "../helpers/controllerProxy";
-import Joi from "joi";
 import { authActions } from "../auth/auth.actions";
+import fs from "fs";
+import path from "path";
 
 class ContactsController {
   async getListContacts(req, res, next) {
@@ -70,20 +67,6 @@ class ContactsController {
     }
   }
 
-  validateCreateContact(req, res, next) {
-    const contactRules = Joi.object({
-      name: Joi.string().required(),
-      email: Joi.string().required(),
-      phone: Joi.string().required(),
-      password: Joi.string().required(),
-    });
-    const validationResult = Joi.validate(req.body, contactRules);
-    if (validationResult.error) {
-      throw new ValidationError("missing required name field");
-    }
-    next();
-  }
-
   async deleteContact(req, res, next) {
     try {
       const contactId = req.params.contactId;
@@ -110,22 +93,52 @@ class ContactsController {
     }
   }
 
-  validateUpdateContact(req, res, next) {
-    const contactRules = Joi.object({
-      name: Joi.string(),
-      email: Joi.string(),
-      phone: Joi.string(),
-      subscription: Joi.string().valid(["free", "pro", "premium"]),
+  async updateAllContactFields(req, res, next) {
+    try {
+      const { _id: contactId, avatarURL: oldAvatarUrl } = req.contact;
+
+      if (!(req.file && req.file.fieldname === "avatar")) {
+        const updatedContact = await contactModel.updateExistedContact(
+          contactId,
+          req.body
+        );
+        const { name, email, subscription } = updatedContact;
+        return res.status(200).json({ name, email, subscription });
+      }
+
+      const newAvatarURL = `${process.env.SERVER_URL}/${process.env.COMPRESSED_IMAGES_BASE_URL}/${req.file.filename}`;
+      await this.findAndDeleteOldAvatar(oldAvatarUrl);
+
+      // await this.getContactByIdOrThrow(contactId);
+      console.log("req.body:", req.body);
+      const newContactData = { ...req.body, avatarURL: newAvatarURL };
+      const updatedContact = await contactModel.updateExistedContact(
+        contactId,
+        newContactData
+      );
+      const { name, email, subscription, avatarURL } = updatedContact;
+      return res.status(200).json({ avatarURL, name, email, subscription });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  async findAndDeleteOldAvatar(oldAvatarUrl) {
+    const OldAvatar = oldAvatarUrl.replace(
+      `${process.env.SERVER_URL}/${process.env.COMPRESSED_IMAGES_BASE_URL}/`,
+      ""
+    );
+    const pathOldAvatar = path.join(
+      __dirname,
+      "../../static/public/images/",
+      `${OldAvatar}`
+    );
+    await fs.unlink(pathOldAvatar, (err) => {
+      if (err) {
+        console.error(err);
+        return;
+      }
     });
-    const { name, email, phone } = req.body;
-    if (!(name || email || phone)) {
-      throw new ValidationError("missing fields");
-    }
-    const validationResult = Joi.validate(req.body, contactRules);
-    if (validationResult.error) {
-      throw new ValidationError("missing required name field");
-    }
-    next();
   }
 
   async getContactByIdOrThrow(contactId) {

@@ -7,6 +7,7 @@ const contactSchema = new Schema({
   email: { type: String, require: true, unique: true },
   phone: { type: String, require: true, max: 20, min: 7 },
   passwordHash: { type: String, require: true },
+  avatarURL: String,
   subscription: {
     type: String,
     require: true,
