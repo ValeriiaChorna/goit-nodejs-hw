@@ -39,9 +39,6 @@ router.patch(
   compressImage,
   contactValidations.validateUpdateAllContactFields,
   contactsController.updateAllContactFields
-  // (req, res, next) => {
-  //   return res.status(200).json("image was saved");
-  // }
 );
 
 export const contactsRouter = router;

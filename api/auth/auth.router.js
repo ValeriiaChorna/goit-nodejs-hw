@@ -9,6 +9,9 @@ router.post(
   authValidations.validateRegisterContact,
   authController.registerContact
 );
+
+router.get("/verify/:verificationToken", authController.verifyContact);
+
 router.post(
   "/login",
   authValidations.validateLogInContact,
