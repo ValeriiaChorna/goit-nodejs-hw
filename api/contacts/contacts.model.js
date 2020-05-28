@@ -2,11 +2,23 @@ import mongoose, { Schema } from "mongoose";
 const mongoosePaginate = require("mongoose-paginate-v2");
 const { ObjectId } = mongoose.Types;
 
+export const CONTACT_STATUSES = {
+  NOT_VERIFIED: "NOT_VERIFIED",
+  ACTIVE: "ACTIVE",
+};
+
 const contactSchema = new Schema({
   name: { type: String, require: true, maxlength: 255, minlength: 3 },
   email: { type: String, require: true, unique: true },
   phone: { type: String, require: true, max: 20, min: 7 },
+  verificationToken: { type: String, require: false },
   passwordHash: { type: String, require: true },
+  status: {
+    type: String,
+    required: true,
+    default: CONTACT_STATUSES.NOT_VERIFIED,
+    enum: Object.values(CONTACT_STATUSES),
+  },
   avatarURL: String,
   subscription: {
     type: String,
@@ -24,6 +36,8 @@ contactSchema.statics.getContactByToken = getContactByToken;
 contactSchema.statics.createNewContact = createNewContact;
 contactSchema.statics.removeContact = removeContact;
 contactSchema.statics.updateExistedContact = updateExistedContact;
+contactSchema.statics.getByVerificationToken = getByVerificationToken;
+contactSchema.statics.verifyContact = verifyContact;
 contactSchema.plugin(mongoosePaginate);
 
 async function getAllContacts() {
@@ -68,6 +82,16 @@ async function getContactByEmail(email) {
 
 async function getContactByToken(token) {
   return this.findOne({ token });
+}
+
+async function getByVerificationToken(verificationToken) {
+  return this.findOne({ verificationToken });
+}
+async function verifyContact(verificationToken) {
+  return this.updateOne(
+    { verificationToken },
+    { $set: { verificationToken: null, status: CONTACT_STATUSES.ACTIVE } }
+  );
 }
 
 export const contactModel = mongoose.model("Contact", contactSchema);
